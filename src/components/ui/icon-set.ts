@@ -33,6 +33,7 @@ export const ICONS = {
   check: { ios: 'checkmark', android: 'check', ion: 'checkmark' },
   more: { ios: 'ellipsis', android: 'more_horiz', ion: 'ellipsis-horizontal' },
   layout: { ios: 'square.grid.3x3', android: 'grid_view', ion: 'grid-outline' },
+  list: { ios: 'list.bullet', android: 'view_agenda', ion: 'list-outline' },
   pencil: { ios: 'pencil', android: 'edit', ion: 'pencil-outline' },
   code: { ios: 'number', android: 'numbers', ion: 'keypad-outline' },
   rotate: { ios: 'arrow.2.squarepath', android: 'sync_alt', ion: 'repeat' },

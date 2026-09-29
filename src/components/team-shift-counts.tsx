@@ -15,6 +15,9 @@ import { radius } from '@/lib/theme';
  * from the tally.
  *
  * Tapping a person picks out their shifts in the grid; tapping again clears it.
+ *
+ * Sized to sit inline in the slim row under the week, next to the status —
+ * the parent gives it the remaining width and it scrolls within that.
  */
 export function TeamShiftCounts({
   schedule,
@@ -46,8 +49,8 @@ export function TeamShiftCounts({
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      style={{ marginTop: 10, marginHorizontal: -10 }}
-      contentContainerStyle={{ paddingHorizontal: 10, gap: 6 }}>
+      style={{ flex: 1 }}
+      contentContainerStyle={{ gap: 5, alignItems: 'center' }}>
       {rows.map((row) => {
         const selected = row.id === selectedId;
         const empty = row.count === 0;
@@ -60,10 +63,10 @@ export function TeamShiftCounts({
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 6,
-              paddingLeft: 10,
-              paddingRight: 4,
-              paddingVertical: 4,
+              gap: 5,
+              height: 26,
+              paddingLeft: 9,
+              paddingRight: 3,
               borderRadius: radius.pill,
               backgroundColor: selected ? c.accentSoft : c.fill,
               borderWidth: 1,
@@ -72,8 +75,8 @@ export function TeamShiftCounts({
             <Text
               numberOfLines={1}
               style={{
-                maxWidth: 120,
-                fontSize: 12,
+                maxWidth: 96,
+                fontSize: 11,
                 fontWeight: selected ? '700' : '600',
                 color: empty ? c.textTertiary : c.text,
               }}>
@@ -81,9 +84,9 @@ export function TeamShiftCounts({
             </Text>
             <View
               style={{
-                minWidth: 22,
-                paddingHorizontal: 6,
-                paddingVertical: 2,
+                minWidth: 19,
+                paddingHorizontal: 5,
+                paddingVertical: 1,
                 borderRadius: radius.pill,
                 alignItems: 'center',
                 backgroundColor: empty ? 'transparent' : selected ? c.accent : c.accent + '24',
@@ -92,7 +95,7 @@ export function TeamShiftCounts({
               }}>
               <Text
                 style={{
-                  fontSize: 11,
+                  fontSize: 10,
                   fontWeight: '700',
                   color: empty ? c.textTertiary : selected ? '#fff' : c.accent,
                 }}>

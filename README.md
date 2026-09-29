@@ -87,7 +87,8 @@ here:
 | Registracija | `app/register.tsx` | yes — signs straight in, no extra step |
 | Urnik, week grid | `(tabs)/index.tsx` + `components/schedule-grid.tsx` | yes |
 | Urnik, vertical grid | `components/schedule-day-grid.tsx` | yes — days down, slots across, same design |
-| Urnik, shifts per person (manager) | `components/team-shift-counts.tsx` | no — typechecks; tap a person to pick out their shifts in the grid |
+| Urnik, header + week actions | `components/schedule-header.tsx` | layout only, with demo data (web, 390×844) — not yet against a real signed-in account |
+| Urnik, shifts per person (manager) | `components/team-shift-counts.tsx` | same — tap a person to pick out their shifts in the grid |
 | Shift editor sheet | `components/shift-sheets.tsx` | yes — times, position, duty, conflict warning, delete |
 | Add-shift sheet | `components/shift-sheets.tsx` | yes — active workers only, `Dodaj` gated on a pick |
 | Želje (worker + manager) | `(tabs)/wishes.tsx` | yes (manager side; worker side not re-checked since the port) |
@@ -222,9 +223,28 @@ later rebuild cannot undo an agreed exchange. Only the client was stale.
 `useFocusEffect` also fires on first mount, so it replaces the mount effect
 rather than adding to it.
 
+## The Urnik header is two slim rows
+
+The schedule is what people open the tab for, so everything above it is kept
+to about a fifth of a phone screen (`components/schedule-header.tsx`):
+
+- **Row 1:** the week (‹ 5. 10. – 11. 10. ›, with "Ta teden" / "Naslednji
+  teden" under it), then icon buttons for the layout, Uredi and, for a
+  manager, "⋯".
+- **Row 2:** for a manager, the status pill, the conflict count and the
+  shift-count chips, scrolling sideways, plus a green `Objavi` while the week
+  is a draft (publishing is the one action a draft is waiting for). For a
+  worker, their own shift count and the hint.
+- **"⋯"** opens a sheet with Sestavi iz želja, Kopiraj prejšnji teden and
+  Objavi / Prekliči objavo. The copy confirmation is rendered inside that
+  sheet, because iOS will not present a second modal while the first is still
+  closing.
+- Notices are a one-line banner that closes by itself after four seconds;
+  errors stay until closed.
+
 ## Copying last week
 
-`Kopiraj prejšnji teden` on the Urnik screen (manager only) calls
+`Kopiraj prejšnji teden` in the Urnik "⋯" sheet (manager only) calls
 `copy_previous_week` (0019), which puts the previous week's shifts into the
 week on screen: same day, slot, times, position, duty and person. It only
 adds. Anything the week already has stays, and running it twice doubles

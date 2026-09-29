@@ -1,23 +1,29 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, View } from 'react-native';
 
 import { useTabBarSpace } from '@/components/ui/tab-bar';
 import { Icon } from '@/components/ui/icon';
 import { ScheduleDayGrid } from '@/components/schedule-day-grid';
+import {
+  ConflictCount,
+  PublishPill,
+  ScheduleActionsSheet,
+  ScheduleBanner,
+  ScheduleHeader,
+  StatusPill,
+} from '@/components/schedule-header';
 import { ScheduleGrid, type ScheduleLayout } from '@/components/schedule-grid';
 import { ShiftActionSheet } from '@/components/shift-action-sheet';
 import { AddShiftSheet, ShiftEditorSheet } from '@/components/shift-sheets';
 import { TeamShiftCounts } from '@/components/team-shift-counts';
-import { Message } from '@/components/ui/auth-parts';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { AppBackground, Card, WeekPicker } from '@/components/ui/design';
+import { AppBackground } from '@/components/ui/design';
 import { useAppData } from '@/contexts/app-data';
 import { useAuth } from '@/contexts/auth';
 import { usePalette } from '@/hooks/use-palette';
 import { useSchedule } from '@/hooks/use-schedule';
 import { shiftCount } from '@/lib/format';
-import { radius, semantic } from '@/lib/theme';
+import { semantic } from '@/lib/theme';
 import { defaultWeek } from '@/lib/week';
 import type { Shift, ShiftSlot } from '@/types';
 
@@ -35,7 +41,7 @@ export default function ScheduleScreen() {
   const [addTarget, setAddTarget] = useState<{ day: number; slot: ShiftSlot } | null>(null);
   const [actingShift, setActingShift] = useState<Shift | null>(null);
   const [focusedWorkerId, setFocusedWorkerId] = useState<string | null>(null);
-  const [confirmingCopy, setConfirmingCopy] = useState(false);
+  const [showingActions, setShowingActions] = useState(false);
 
   const isManager = session?.profile.role === 'manager';
 
@@ -76,14 +82,6 @@ export default function ScheduleScreen() {
 
   const myShifts = schedule.shifts.filter((s) => s.assigned_worker_id === profile.id);
 
-  // An empty draft week is the normal case and needs no question. Anything
-  // already there, or a week the team can already see, gets one first: the
-  // copy only adds, but it adds to something someone is relying on.
-  const copyNeedsConfirm = schedule.shifts.length > 0 || schedule.isPublished;
-  const copyPreviousWeek = () => {
-    setConfirmingCopy(false);
-    void schedule.copyPreviousWeek(weekStart);
-  };
 
   const gridProps = {
     organization,
@@ -114,131 +112,65 @@ export default function ScheduleScreen() {
     <View style={{ flex: 1 }}>
       <AppBackground />
 
-      <View style={{ flex: 1, paddingTop: 56 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, gap: 10 }}>
-          <Text style={{ flex: 1, fontSize: 26, fontWeight: '700', color: c.text }}>Urnik</Text>
-
-          <Pressable
-            onPress={() => setLayout(layout === 'grid' ? 'vertical' : 'grid')}
-            hitSlop={8}
-            style={{
-              paddingHorizontal: 10,
-              paddingVertical: 6,
-              borderRadius: radius.sm,
-              backgroundColor: c.fill,
-            }}>
-            <Text style={{ fontSize: 12, fontWeight: '600', color: c.text }}>
-              {layout === 'grid' ? 'Navpično' : 'Teden'}
-            </Text>
-          </Pressable>
-
+      <View style={{ flex: 1, paddingTop: 50 }}>
+        <ScheduleHeader
+          weekStart={weekStart}
+          onWeekChange={setWeekStart}
+          layout={layout}
+          onToggleLayout={() => setLayout(layout === 'grid' ? 'vertical' : 'grid')}
+          editing={isManager ? editing : undefined}
+          onToggleEditing={isManager ? () => setEditing(!editing) : undefined}
+          onMore={isManager ? () => setShowingActions(true) : undefined}>
           {isManager ? (
-            <Pressable
-              onPress={() => setEditing(!editing)}
-              hitSlop={8}
-              style={{
-                paddingHorizontal: 10,
-                paddingVertical: 6,
-                borderRadius: radius.sm,
-                backgroundColor: editing ? c.accent : c.fill,
-              }}>
-              <Text
-                style={{ fontSize: 12, fontWeight: '600', color: editing ? '#fff' : c.text }}>
-                {editing ? 'Končaj' : 'Uredi'}
-              </Text>
-            </Pressable>
-          ) : null}
-        </View>
-
-        <View style={{ paddingHorizontal: 14, paddingTop: 10 }}>
-          <Card padding={10}>
-            <WeekPicker weekStart={weekStart} onChange={setWeekStart} />
-            <View style={{ height: 1, backgroundColor: c.border, marginVertical: 8 }} />
-
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              {isManager ? (
-                <StatusPill
-                  label={schedule.isPublished ? 'OBJAVLJENO' : 'OSNUTEK'}
-                  tint={schedule.isPublished ? semantic.green : semantic.orange}
+            <>
+              <StatusPill
+                label={schedule.isPublished ? 'OBJAVLJENO' : 'OSNUTEK'}
+                tint={schedule.isPublished ? semantic.green : semantic.orange}
+              />
+              <ConflictCount count={schedule.conflicts.length} />
+              {editing ? (
+                <Text style={{ flex: 1, fontSize: 12, color: c.textSecondary }}>
+                  Klikni polje za urejanje
+                </Text>
+              ) : (
+                <TeamShiftCounts
+                  schedule={schedule}
+                  team={team}
+                  selectedId={focusedWorkerId}
+                  onSelect={setFocusedWorkerId}
                 />
-              ) : myShifts.length > 0 ? (
+              )}
+              {!schedule.isPublished && !editing ? (
+                <PublishPill
+                  onPress={() => void schedule.setPublished(true, weekStart)}
+                  disabled={schedule.working}
+                />
+              ) : null}
+            </>
+          ) : (
+            <>
+              {myShifts.length > 0 ? (
                 <StatusPill label={shiftCount(myShifts.length).toUpperCase()} tint={c.accent} />
               ) : (
-                <Text style={{ fontSize: 13, color: c.textSecondary }}>
+                <Text style={{ fontSize: 12, color: c.textSecondary }}>
                   Ta teden nisi na urniku.
                 </Text>
               )}
-
-              {schedule.conflicts.length > 0 && isManager ? (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                  <Icon name="warning" size={12} color={semantic.yellow} />
-                  <Text style={{ fontSize: 12, fontWeight: '600', color: semantic.yellow }}>
-                    {schedule.conflicts.length}
-                  </Text>
-                </View>
-              ) : null}
-
               <View style={{ flex: 1 }} />
-
-              <Text style={{ fontSize: 11, color: c.textSecondary }}>
-                {isManager
-                  ? editing
-                    ? 'Klikni polje za urejanje'
-                    : focusedWorkerId
-                      ? `${team.nameOf(focusedWorkerId)}: ${shiftCount(
-                          schedule.shifts.filter((s) => s.assigned_worker_id === focusedWorkerId)
-                            .length,
-                        )}`
-                      : `${schedule.shifts.length} vnosov`
-                  : 'Klikni svojo smeno za menjavo'}
+              <Text style={{ fontSize: 11, color: c.textTertiary }}>
+                Klikni smeno za menjavo
               </Text>
-            </View>
+            </>
+          )}
+        </ScheduleHeader>
 
-            {isManager ? (
-              <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
-                <ActionButton
-                  label="Sestavi iz želja"
-                  onPress={() => void schedule.rebuild(weekStart)}
-                  disabled={schedule.working}
-                />
-                <ActionButton
-                  label={schedule.isPublished ? 'Prekliči objavo' : 'Objavi'}
-                  onPress={() => void schedule.setPublished(!schedule.isPublished, weekStart)}
-                  disabled={schedule.working}
-                  tint={schedule.isPublished ? semantic.red : semantic.green}
-                />
-              </View>
-            ) : null}
-
-            {isManager ? (
-              <View style={{ flexDirection: 'row', marginTop: 8 }}>
-                <ActionButton
-                  label="Kopiraj prejšnji teden"
-                  onPress={() => (copyNeedsConfirm ? setConfirmingCopy(true) : copyPreviousWeek())}
-                  disabled={schedule.working}
-                  tint={c.textSecondary}
-                />
-              </View>
-            ) : null}
-
-            {isManager ? (
-              <TeamShiftCounts
-                schedule={schedule}
-                team={team}
-                selectedId={focusedWorkerId}
-                onSelect={setFocusedWorkerId}
-              />
-            ) : null}
-          </Card>
-        </View>
-
-        {schedule.error ? (
-          <View style={{ paddingHorizontal: 14, paddingTop: 10 }}>
-            <Message text={schedule.error} kind="error" />
-          </View>
-        ) : schedule.notice ? (
-          <View style={{ paddingHorizontal: 14, paddingTop: 10 }}>
-            <Message text={schedule.notice} kind="notice" />
+        {schedule.error || schedule.notice ? (
+          <View style={{ paddingTop: 6 }}>
+            <ScheduleBanner
+              text={(schedule.error ?? schedule.notice)!}
+              kind={schedule.error ? 'error' : 'notice'}
+              onDismiss={schedule.clearMessages}
+            />
           </View>
         ) : null}
 
@@ -323,18 +255,15 @@ export default function ScheduleScreen() {
         />
       ) : null}
 
-      <ConfirmDialog
-        visible={confirmingCopy}
-        title="Kopiram prejšnji teden?"
-        message={
-          schedule.isPublished
-            ? 'Ta teden je že objavljen, zato bo ekipa kopirane smene videla takoj. Obstoječe smene ostanejo, dodajo se le manjkajoče.'
-            : 'Ta teden že ima smene. Ostanejo, kot so; dodajo se le tiste iz prejšnjega tedna, ki jih še ni.'
-        }
-        confirmLabel="Kopiraj"
-        busy={schedule.working}
-        onConfirm={copyPreviousWeek}
-        onCancel={() => setConfirmingCopy(false)}
+      <ScheduleActionsSheet
+        visible={showingActions}
+        isPublished={schedule.isPublished}
+        working={schedule.working}
+        copyNeedsConfirm={schedule.shifts.length > 0 || schedule.isPublished}
+        onClose={() => setShowingActions(false)}
+        onRebuild={() => void schedule.rebuild(weekStart)}
+        onCopy={() => void schedule.copyPreviousWeek(weekStart)}
+        onTogglePublished={() => void schedule.setPublished(!schedule.isPublished, weekStart)}
       />
 
       {actingShift ? (
@@ -357,53 +286,5 @@ export default function ScheduleScreen() {
         />
       ) : null}
     </View>
-  );
-}
-
-function StatusPill({ label, tint }: { label: string; tint: string }) {
-  return (
-    <View
-      style={{
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: radius.pill,
-        backgroundColor: tint + '2B',
-      }}>
-      <Text style={{ fontSize: 10, fontWeight: '800', letterSpacing: 0.5, color: tint }}>
-        {label}
-      </Text>
-    </View>
-  );
-}
-
-function ActionButton({
-  label,
-  onPress,
-  disabled,
-  tint,
-}: {
-  label: string;
-  onPress: () => void;
-  disabled?: boolean;
-  tint?: string;
-}) {
-  const c = usePalette();
-  const color = tint ?? c.accent;
-
-  return (
-    <Pressable
-      onPress={onPress}
-      disabled={disabled}
-      style={{
-        flex: 1,
-        minHeight: 38,
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: radius.sm,
-        backgroundColor: color + '24',
-        opacity: disabled ? 0.5 : 1,
-      }}>
-      <Text style={{ fontSize: 13, fontWeight: '600', color }}>{label}</Text>
-    </Pressable>
   );
 }
