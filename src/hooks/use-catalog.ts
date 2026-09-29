@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 import type { Duty, Position } from '@/types';
 
 /**
- * A manager curating their own restaurant's positions and duties.
+ * A manager curating their own organization's positions and duties.
  *
  * Two ways to retire an entry, and the difference matters. `is_active = false`
  * hides it while every shift and wish pointing at it keeps making sense.

@@ -394,7 +394,7 @@ export default function SwapsScreen() {
                 <EmptyHint
                   text={
                     cover.active.length === 0
-                      ? 'V restavraciji ni nobene aktivne menjave.'
+                      ? 'V organizaciji ni nobene aktivne menjave.'
                       : 'Trenutno ni smen, ki bi jih lahko prevzel.'
                   }
                 />

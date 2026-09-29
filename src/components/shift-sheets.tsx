@@ -98,7 +98,7 @@ export function ShiftEditorSheet({
             </View>
             {positions.length === 0 && duties.length === 0 ? (
               <Text style={{ fontSize: 13, color: c.textSecondary, marginTop: 8 }}>
-                Ta restavracija nima nastavljenih delovnih mest ne zadolžitev.
+                Ta organizacija nima nastavljenih delovnih mest ne zadolžitev.
               </Text>
             ) : null}
           </Card>

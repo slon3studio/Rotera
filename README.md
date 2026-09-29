@@ -245,18 +245,18 @@ Rotera is meant for any shift-based business, not only restaurants. The data
 model already fits: positions, duties and shift times are set per
 organization, not hard-coded. What still assumes a restaurant:
 
-- **Words on screen.** "Restavracija" and "natakar" appear in
-  `app/register.tsx` (Nova restavracija, Koda/Ime restavracije, "pridružiš se
-  kot natakar"), `app/settings.tsx` (section title), `contexts/auth.tsx`
-  (error messages), `(tabs)/wishes.tsx`, `(tabs)/swaps.tsx`,
-  `components/shift-sheets.tsx`, the role labels in `types/index.ts`
-  (`roleLabel`) and the `NATAKAR` badge in `components/ui/design.tsx`. Neutral
-  replacements: organizacija / podjetje, zaposleni.
+- **Words on screen** are done: the UI says organizacija and zaposleni
+  (`roleLabel.worker`, the role badge). The database enum value stays
+  `worker`; only its label changed. The one exception is the comment in
+  `contexts/auth.tsx` quoting the Swift app's old error, kept as history.
+- **Seeded catalog.** Every new organization is still created with a
+  restaurant's positions (Šank, Strežba) and duties (Priprava, Rajon+Smeti,
+  Roba) by `create_organization` (last defined in 0007). The manager can
+  rename or delete them in Nastavitve urnika, but a care home should not start
+  with a bar. Changing the seed is a migration.
 - **Only two slots a day.** Morning and afternoon. Night shifts, 12-hour
   shifts or three-shift rotations (care homes, factories, security) need a
   more flexible slot model — a schema change, so a migration.
-- **Code comments** still say "restaurant" where they mean the tenant. Harmless,
-  but new comments should say "organization".
 
 New work should use the neutral wording from the start.
 

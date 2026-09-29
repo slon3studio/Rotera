@@ -2,25 +2,25 @@
 export type UserRole = 'worker' | 'manager';
 
 export const roleLabel: Record<UserRole, string> = {
-  worker: 'natakar',
+  worker: 'zaposleni',
   manager: 'vodja',
 };
 
 /**
- * A restaurant. The tenant boundary — RLS guarantees a signed-in user can only
+ * An organization. The tenant boundary — RLS guarantees a signed-in user can only
  * ever read the single row matching their own organization_id.
  */
 export type Organization = {
   id: string;
   name: string;
   join_code: string;
-  /** Default shift times, per restaurant. 8:30/16:00 is seed data, not a rule. */
+  /** Default shift times, per organization. 8:30/16:00 is seed data, not a rule. */
   morning_start: string;
   morning_end: string;
   afternoon_start: string;
   afternoon_end: string;
   /**
-   * Which halves of the day this restaurant runs. A café that shuts at four
+   * Which halves of the day this organization runs. A shop that shuts at four
    * has no afternoon shift, and offering one produces wishes that can never
    * be met. Defaults to both; the database refuses having neither.
    */
@@ -28,7 +28,7 @@ export type Organization = {
   uses_afternoon: boolean;
 };
 
-/** The slots this restaurant actually runs, in the order they are shown. */
+/** The slots this organization actually runs, in the order they are shown. */
 export function enabledSlots(organization: Organization): ShiftSlot[] {
   const slots: ShiftSlot[] = [];
   if (organization.uses_morning) slots.push('morning');

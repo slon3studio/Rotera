@@ -21,7 +21,7 @@ const SHIFT_COLUMNS =
  *
  * Manager edits are plain UPDATEs against `shifts` — a drag-and-drop is one row
  * update. `organization_id` is set by a database trigger, never sent from here,
- * and a trigger rejects any reference to another restaurant's worker, position
+ * and a trigger rejects any reference to another organization's worker, position
  * or duty.
  */
 export function useSchedule() {

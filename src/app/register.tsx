@@ -101,7 +101,7 @@ export default function RegisterScreen() {
             onChange={setMode}
             options={[
               { value: 'join', label: 'Pridruži se ekipi' },
-              { value: 'create', label: 'Nova restavracija' },
+              { value: 'create', label: 'Nova organizacija' },
             ]}
           />
 
@@ -110,7 +110,7 @@ export default function RegisterScreen() {
           {mode === 'join' ? (
             <AuthField
               icon="code"
-              placeholder="Koda restavracije"
+              placeholder="Koda organizacije"
               value={joinCode}
               onChangeText={setJoinCode}
               autoCapitalize="characters"
@@ -121,7 +121,7 @@ export default function RegisterScreen() {
           ) : (
             <AuthField
               icon="home"
-              placeholder="Ime restavracije"
+              placeholder="Ime organizacije"
               value={organizationName}
               onChangeText={setOrganizationName}
               autoCapitalize="words"
@@ -132,8 +132,8 @@ export default function RegisterScreen() {
 
           <Text style={{ fontSize: 13, color: c.textSecondary, marginTop: 10 }}>
             {mode === 'join'
-              ? 'Kodo dobiš od vodje. Pridružiš se kot natakar.'
-              : 'Ustvariš novo restavracijo in postaneš njen vodja.'}
+              ? 'Kodo dobiš od vodje. Pridružiš se kot zaposleni.'
+              : 'Ustvariš novo organizacijo in postaneš njen vodja.'}
           </Text>
 
           {error ? (

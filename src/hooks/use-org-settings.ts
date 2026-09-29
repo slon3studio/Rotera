@@ -14,12 +14,12 @@ export type ScheduleSettings = {
 };
 
 /**
- * The restaurant's own schedule rules: which halves of the day it runs and
+ * The organization's own schedule rules: which halves of the day it runs and
  * when each one starts and ends.
  *
  * Writes straight to `organizations` rather than through an RPC. That is safe
  * here because the policy from 0001 already limits the update to a manager of
- * their own restaurant, and 0017 grants exactly these six columns and no
+ * their own organization, and 0017 grants exactly these six columns and no
  * others — `join_code` in particular stays out of reach.
  *
  * The session carries the organization, so a successful save has to reload it:

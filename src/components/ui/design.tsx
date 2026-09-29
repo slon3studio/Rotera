@@ -117,7 +117,7 @@ export function InitialsAvatar({ name, size = 52 }: { name: string; size?: numbe
 
 export function RoleBadge({ role }: { role: UserRole }) {
   const tint = role === 'manager' ? positionColors.purple : semantic.teal;
-  const label = role === 'manager' ? 'VODJA' : 'NATAKAR';
+  const label = role === 'manager' ? 'VODJA' : 'ZAPOSLENI';
 
   return (
     <View
@@ -182,7 +182,7 @@ export function PreferenceSelector({
 }: {
   value: ShiftPreference;
   onChange: (next: ShiftPreference) => void;
-  /** Which slots the restaurant runs. Anything else must not be offerable —
+  /** Which slots the organization runs. Anything else must not be offerable —
    *  the database refuses a wish for a switched-off slot, and a button that
    *  always errors is worse than no button. `any` is dropped when only one
    *  slot is live, because there it would mean the same as that slot. */
