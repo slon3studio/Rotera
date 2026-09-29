@@ -38,7 +38,7 @@ type AuthValue = {
 const AuthContext = createContext<AuthValue | null>(null);
 
 /**
- * Outcome of loading the signed-in user's profile + restaurant.
+ * Outcome of loading the signed-in user's profile + organization.
  *
  * Keeping "there is no profile row" apart from "the query failed" is the whole
  * point. The Swift app collapsed them once, and a missing migration then got
@@ -102,14 +102,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (result.kind === 'noProfile') {
-      // Signup created the account but never attached a restaurant. Rare, and
+      // Signup created the account but never attached an organization. Rare, and
       // there is no screen to recover on, so end the session cleanly rather
       // than stranding the user.
       await supabase.auth.signOut();
       setSession(null);
       setStatus('signedOut');
       setNotice(
-        'Ta račun ni povezan z nobeno restavracijo. Registriraj se znova ali prosi vodjo za kodo.',
+        'Ta račun ni povezan z nobeno organizacijo. Registriraj se znova ali prosi vodjo za kodo.',
       );
       return;
     }
@@ -185,11 +185,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       if (organization.kind === 'create' && !organization.name.trim()) {
-        setError('Vnesi ime restavracije.');
+        setError('Vnesi ime organizacije.');
         return;
       }
       if (organization.kind === 'join' && !organization.code.trim()) {
-        setError('Vnesi kodo restavracije.');
+        setError('Vnesi kodo organizacije.');
         return;
       }
 
@@ -206,7 +206,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // With "Confirm email" on, signUp returns no session, so the restaurant
+      // With "Confirm email" on, signUp returns no session, so the organization
       // cannot be attached yet. The user confirms by email and signs in.
       const { data: after } = await supabase.auth.getSession();
       if (!after.session) {

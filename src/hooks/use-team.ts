@@ -4,10 +4,10 @@ import { supabase } from '@/lib/supabase';
 import type { Profile } from '@/types';
 
 /**
- * The people in the signed-in user's restaurant.
+ * The people in the signed-in user's organization.
  *
  * The query carries no `organization_id` filter on purpose — RLS narrows it.
- * If another restaurant's staff ever appears, isolation has regressed.
+ * If another organization's staff ever appears, isolation has regressed.
  */
 export function useTeam() {
   const [members, setMembers] = useState<Profile[]>([]);

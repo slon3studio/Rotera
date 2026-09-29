@@ -15,13 +15,15 @@ import { usePalette } from '@/hooks/use-palette';
 import * as time from '@/lib/time';
 import { positionColors, radius, semantic } from '@/lib/theme';
 import type { Duty, Position, ShiftSlot } from '@/types';
+import { tracksTips } from '@/types';
 
 /**
- * Everything about how *this* restaurant's schedule is shaped.
+ * Everything about how *this* organization's schedule is shaped.
  *
  * Which halves of the day it runs, when each one starts and ends, and its own
- * vocabulary — Šank / Rajon / Priprava are seeded because they are this
- * restaurant's words; another customer needs Peč, Dostava, Kuhinja.
+ * vocabulary. A new organization starts with no positions or duties (0018):
+ * a restaurant wants Šank and Priprava, a shop Blagajna and Skladišče, so the
+ * owner adds their own here.
  *
  * One screen rather than three, because these settings are read together: the
  * times mean nothing without knowing which slots are live, and a position is
@@ -149,8 +151,26 @@ export default function ScheduleSettingsScreen() {
         {org.error ? <Message text={org.error} kind="error" /> : null}
         {org.notice ? <Message text={org.notice} kind="notice" /> : null}
 
+        <SectionTitle text="Napitnine" />
         <Card>
-          <SectionTitle text="Delovna mesta" trailing="Šank, Rajon …" />
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <Text style={{ flex: 1, fontSize: 15, fontWeight: '600', color: c.text }}>
+              Zaposleni vpisujejo napitnine
+            </Text>
+            <Switch
+              value={tracksTips(organization)}
+              onValueChange={(on) => void org.setTracksTips(on)}
+              disabled={org.saving}
+            />
+          </View>
+        </Card>
+        <Text style={{ fontSize: 12, color: c.textTertiary }}>
+          Za gostinstvo. Če jih izklopiš, polje izgine iz vpisa opravljenih smen in iz
+          zaslužka. Že vpisane napitnine ostanejo shranjene.
+        </Text>
+
+        <Card>
+          <SectionTitle text="Delovna mesta" trailing="Blagajna, Skladišče …" />
           <View style={{ height: 12 }} />
 
           {catalog.positions.length === 0 ? (
@@ -205,7 +225,7 @@ export default function ScheduleSettingsScreen() {
         </Card>
 
         <Card>
-          <SectionTitle text="Zadolžitve" trailing="Priprava, Roba …" />
+          <SectionTitle text="Zadolžitve" trailing="Čiščenje, Inventura …" />
           <View style={{ height: 12 }} />
 
           {catalog.duties.length === 0 ? (

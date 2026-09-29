@@ -21,7 +21,7 @@ const SHIFT_COLUMNS =
  *
  * Manager edits are plain UPDATEs against `shifts` — a drag-and-drop is one row
  * update. `organization_id` is set by a database trigger, never sent from here,
- * and a trigger rejects any reference to another restaurant's worker, position
+ * and a trigger rejects any reference to another organization's worker, position
  * or duty.
  */
 export function useSchedule() {
@@ -167,6 +167,44 @@ export function useSchedule() {
     [loadWeek],
   );
 
+  /**
+   * Puts last week's shifts into this week — same day, slot, times, position,
+   * duty and person. Only adds: what the week already has stays, and running it
+   * twice does not double anything. People who have left since and slots
+   * switched off since are skipped by the database, which reports how many.
+   */
+  const copyPreviousWeek = useCallback(
+    async (weekStart: Date) => {
+      setWorking(true);
+      setError(null);
+      setNotice(null);
+
+      const { data, error: rpcError } = await supabase.rpc('copy_previous_week', {
+        p_week_start: isoString(weekStart),
+      });
+      setWorking(false);
+
+      if (rpcError) {
+        setError(rpcError.message);
+        return;
+      }
+
+      const result = (data ?? {}) as { copied?: number; skipped?: number };
+      const copied = result.copied ?? 0;
+      const skipped = result.skipped ?? 0;
+
+      setNotice(
+        copied === 0
+          ? 'Ta teden že vsebuje vse smene iz prejšnjega.'
+          : skipped === 0
+            ? `Kopiranih smen: ${copied}.`
+            : `Kopiranih smen: ${copied}. Izpuščenih: ${skipped} (že na urniku, neaktivni ali izklopljena smena).`,
+      );
+      await loadWeek(weekStart);
+    },
+    [loadWeek],
+  );
+
   const setPublished = useCallback(
     async (published: boolean, weekStart: Date) => {
       setWorking(true);
@@ -256,6 +294,7 @@ export function useSchedule() {
     loadWeek,
     loadWeeks,
     rebuild,
+    copyPreviousWeek,
     setPublished,
 
     shiftsFor,

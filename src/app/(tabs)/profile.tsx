@@ -25,6 +25,7 @@ import { dayAndDate, hours, money, monthLabel, shiftCount } from '@/lib/format';
 import { radius, semantic } from '@/lib/theme';
 import * as time from '@/lib/time';
 import type { Profile, ShiftLog } from '@/types';
+import { tracksTips } from '@/types';
 
 export default function ProfileScreen() {
   const c = usePalette();
@@ -65,6 +66,7 @@ export default function ProfileScreen() {
 
   if (!session) return null;
   const { profile, organization } = session;
+  const showTips = tracksTips(organization);
 
   const currentMonth = earnings.months[0];
 
@@ -182,7 +184,7 @@ export default function ProfileScreen() {
                 caption={
                   earnings.hourlyRate == null
                     ? 'vpiši postavko'
-                    : (currentMonth?.tips ?? 0) > 0
+                    : showTips && (currentMonth?.tips ?? 0) > 0
                       ? `+ ${money(currentMonth!.tips)} napitnine`
                       : 'ocena'
                 }
@@ -221,7 +223,7 @@ export default function ProfileScreen() {
                         <Text style={{ fontSize: 15, fontWeight: '600', color: c.text }}>
                           {hours(time.hoursBetween(log.clock_in, log.clock_out))}
                         </Text>
-                        {log.tips_earned ? (
+                        {showTips && log.tips_earned ? (
                           <Text style={{ fontSize: 12, color: semantic.green }}>
                             {money(log.tips_earned)}
                           </Text>
@@ -377,6 +379,7 @@ export default function ProfileScreen() {
         <ShiftLogEditorSheet
           key={editingLog.id}
           log={editingLog}
+          showTips={showTips}
           onClose={() => setEditingLog(null)}
           onSave={(clockIn, clockOut, tips, notes) =>
             void earnings.updateLog(editingLog.id, clockIn, clockOut, tips, notes, profile.id)

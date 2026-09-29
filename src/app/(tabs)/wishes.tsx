@@ -286,7 +286,7 @@ function ManagerWishes() {
 
           {team.workers.length === 0 ? (
             <Text style={{ fontSize: 13, color: c.textSecondary }}>
-              V restavraciji še ni nobenega natakarja. Deli kodo za pridružitev iz svojega profila.
+              V organizaciji še ni nobenega zaposlenega. Deli kodo za pridružitev iz svojega profila.
             </Text>
           ) : missing.length === 0 ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}>

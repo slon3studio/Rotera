@@ -2,33 +2,39 @@
 export type UserRole = 'worker' | 'manager';
 
 export const roleLabel: Record<UserRole, string> = {
-  worker: 'natakar',
+  worker: 'zaposleni',
   manager: 'vodja',
 };
 
 /**
- * A restaurant. The tenant boundary — RLS guarantees a signed-in user can only
+ * An organization. The tenant boundary — RLS guarantees a signed-in user can only
  * ever read the single row matching their own organization_id.
  */
 export type Organization = {
   id: string;
   name: string;
   join_code: string;
-  /** Default shift times, per restaurant. 8:30/16:00 is seed data, not a rule. */
+  /** Default shift times, per organization. 8:30/16:00 is seed data, not a rule. */
   morning_start: string;
   morning_end: string;
   afternoon_start: string;
   afternoon_end: string;
   /**
-   * Which halves of the day this restaurant runs. A café that shuts at four
+   * Which halves of the day this organization runs. A shop that shuts at four
    * has no afternoon shift, and offering one produces wishes that can never
    * be met. Defaults to both; the database refuses having neither.
    */
   uses_morning: boolean;
   uses_afternoon: boolean;
+  /**
+   * Whether workers log tips on their shifts. A restaurant thing — a care home
+   * or a warehouse switches it off. Off only hides the field; tips already
+   * logged stay in `shift_logs`. Default true (0019).
+   */
+  tracks_tips: boolean;
 };
 
-/** The slots this restaurant actually runs, in the order they are shown. */
+/** The slots this organization actually runs, in the order they are shown. */
 export function enabledSlots(organization: Organization): ShiftSlot[] {
   const slots: ShiftSlot[] = [];
   if (organization.uses_morning) slots.push('morning');
@@ -36,6 +42,14 @@ export function enabledSlots(organization: Organization): ShiftSlot[] {
   // Should be impossible (the database has a check constraint), but a grid
   // with no columns at all would be a worse way to find out.
   return slots.length > 0 ? slots : ['morning', 'afternoon'];
+}
+
+/**
+ * Read through this, not the column: until 0019 is applied the column is not
+ * there at all, and a missing value has to mean "as before" — tips on.
+ */
+export function tracksTips(organization: Organization): boolean {
+  return organization.tracks_tips !== false;
 }
 
 /** Extends auth.users. `id` is the Supabase auth user id. */

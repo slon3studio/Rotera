@@ -14,12 +14,12 @@ export type ScheduleSettings = {
 };
 
 /**
- * The restaurant's own schedule rules: which halves of the day it runs and
+ * The organization's own schedule rules: which halves of the day it runs and
  * when each one starts and ends.
  *
  * Writes straight to `organizations` rather than through an RPC. That is safe
  * here because the policy from 0001 already limits the update to a manager of
- * their own restaurant, and 0017 grants exactly these six columns and no
+ * their own organization, and 0017 grants exactly these six columns and no
  * others — `join_code` in particular stays out of reach.
  *
  * The session carries the organization, so a successful save has to reload it:
@@ -66,11 +66,43 @@ export function useOrgSettings() {
     [session, reload],
   );
 
+  /**
+   * One switch, saved as soon as it is flipped — unlike the shift times there
+   * is nothing to get half-right first. 0019 grants this column on its own.
+   */
+  const setTracksTips = useCallback(
+    async (on: boolean) => {
+      if (!session) return false;
+
+      setSaving(true);
+      setError(null);
+      setNotice(null);
+
+      const { error: updateError } = await supabase
+        .from('organizations')
+        .update({ tracks_tips: on })
+        .eq('id', session.organization.id);
+
+      if (updateError) {
+        setSaving(false);
+        setError(updateError.message);
+        return false;
+      }
+
+      await reload();
+      setSaving(false);
+      setNotice(on ? 'Napitnine so vklopljene.' : 'Napitnine so izklopljene.');
+      return true;
+    },
+    [session, reload],
+  );
+
   return {
     saving,
     error,
     notice,
     save,
+    setTracksTips,
     clearMessages: () => {
       setError(null);
       setNotice(null);

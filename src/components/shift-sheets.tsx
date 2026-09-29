@@ -98,7 +98,7 @@ export function ShiftEditorSheet({
             </View>
             {positions.length === 0 && duties.length === 0 ? (
               <Text style={{ fontSize: 13, color: c.textSecondary, marginTop: 8 }}>
-                Ta restavracija nima nastavljenih delovnih mest ne zadolžitev.
+                Ta organizacija nima nastavljenih delovnih mest ne zadolžitev.
               </Text>
             ) : null}
           </Card>
@@ -229,10 +229,13 @@ export function AddShiftSheet({
 /** Worker corrects one of their own logged shifts. */
 export function ShiftLogEditorSheet({
   log,
+  showTips,
   onSave,
   onClose,
 }: {
   log: { id: string; work_date: string; clock_in: string; clock_out: string; tips_earned: number | null; notes: string | null; shift_id: string | null };
+  /** Off when the organization does not track tips (0019). */
+  showTips: boolean;
   onSave: (clockIn: string, clockOut: string, tips: number | null, notes: string) => void;
   onClose: () => void;
 }) {
@@ -252,7 +255,14 @@ export function ShiftLogEditorSheet({
       title="Popravi smeno"
       onClose={onClose}
       onConfirm={() => {
-        onSave(time.fromDate(start), time.fromDate(end), parseDecimal(tips), notes);
+        // With tips hidden, whatever was logged before is passed back as it
+        // was — hiding the field must not quietly wipe it.
+        onSave(
+          time.fromDate(start),
+          time.fromDate(end),
+          showTips ? parseDecimal(tips) : log.tips_earned,
+          notes,
+        );
         onClose();
       }}>
       <>
@@ -274,28 +284,36 @@ export function ShiftLogEditorSheet({
           </Card>
           <SheetFootnote text="Če si delal čez polnoč, vpiši uro odhoda normalno — ure se preračunajo same." />
 
-          <SectionTitle text="Napitnina" />
+          <SectionTitle text={showTips ? 'Napitnina' : 'Opomba'} />
           <Card>
-            <SheetRow label="Znesek">
-              <TextInput
-                value={tips}
-                onChangeText={setTips}
-                keyboardType="decimal-pad"
-                placeholder="0,00"
-                placeholderTextColor={c.textTertiary}
-                style={{ fontSize: 15, color: c.text, minWidth: 70, textAlign: 'right' }}
-              />
-            </SheetRow>
+            {showTips ? (
+              <SheetRow label="Znesek">
+                <TextInput
+                  value={tips}
+                  onChangeText={setTips}
+                  keyboardType="decimal-pad"
+                  placeholder="0,00"
+                  placeholderTextColor={c.textTertiary}
+                  style={{ fontSize: 15, color: c.text, minWidth: 70, textAlign: 'right' }}
+                />
+              </SheetRow>
+            ) : null}
             <TextInput
               value={notes}
               onChangeText={setNotes}
               placeholder="Opomba (neobvezno)"
               placeholderTextColor={c.textTertiary}
               multiline
-              style={{ minHeight: 50, fontSize: 15, color: c.text, marginTop: 8 }}
+              style={{ minHeight: 50, fontSize: 15, color: c.text, marginTop: showTips ? 8 : 0 }}
             />
           </Card>
-          <SheetFootnote text="Napitnino in opombo vidiš samo ti. Vodja ne." />
+          <SheetFootnote
+            text={
+              showTips
+                ? 'Napitnino in opombo vidiš samo ti. Vodja ne.'
+                : 'Opombo vidiš samo ti. Vodja ne.'
+            }
+          />
       </>
     </Sheet>
   );

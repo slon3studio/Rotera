@@ -14,9 +14,9 @@
 -- changes to "Run selected"). Running several at once only shows you the last
 -- one's result, and the first error stops everything after it.
 --
---   STEPS 1-4 must each return result = PASS.
+--   STEPS 1-4 and 10 must each return result = PASS.
 --
---   STEPS 5-8 are attack tests that are SUPPOSED to fail. Each must produce a
+--   STEPS 5-9 are attack tests that are SUPPOSED to fail. Each must produce a
 --   red error message. An error there is the pass condition; a block that
 --   succeeds quietly is a security hole.
 --
@@ -253,4 +253,50 @@ begin;
   values (gen_random_uuid(),
           (select id from public.organizations limit 1),
           'Vsiljivec', 'manager');
+rollback;
+
+
+-- ----------------------------------------------------------------------------
+-- STEP 9 — A worker CANNOT copy last week's schedule (0019)
+--
+-- EXPECTED: FAILS with "Samo vodja lahko kopira urnik."
+-- ----------------------------------------------------------------------------
+begin;
+  select set_config('test.worker_id',
+    (select id::text from public.profiles where role = 'worker' limit 1), true);
+  select set_config(
+    'request.jwt.claims',
+    json_build_object('sub', current_setting('test.worker_id'), 'role', 'authenticated')::text,
+    true
+  );
+  set local role authenticated;
+
+  select public.copy_previous_week(date_trunc('week', current_date)::date);
+rollback;
+
+
+-- ----------------------------------------------------------------------------
+-- STEP 10 — A worker CANNOT switch tips off for the organization (0019)
+--
+-- Not an error: the 0001 update policy is manager-only, so the worker's
+-- update matches no row. EXPECTED: result = PASS, rows_changed = 0.
+-- ----------------------------------------------------------------------------
+begin;
+  select set_config('test.worker_id',
+    (select id::text from public.profiles where role = 'worker' limit 1), true);
+  select set_config(
+    'request.jwt.claims',
+    json_build_object('sub', current_setting('test.worker_id'), 'role', 'authenticated')::text,
+    true
+  );
+  set local role authenticated;
+
+  with changed as (
+    update public.organizations
+    set tracks_tips = not tracks_tips
+    returning id
+  )
+  select
+    case when (select count(*) from changed) = 0 then 'PASS' else 'FAIL' end as result,
+    (select count(*) from changed) as rows_changed;
 rollback;

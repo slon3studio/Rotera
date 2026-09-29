@@ -8,7 +8,9 @@ import { ScheduleDayGrid } from '@/components/schedule-day-grid';
 import { ScheduleGrid, type ScheduleLayout } from '@/components/schedule-grid';
 import { ShiftActionSheet } from '@/components/shift-action-sheet';
 import { AddShiftSheet, ShiftEditorSheet } from '@/components/shift-sheets';
+import { TeamShiftCounts } from '@/components/team-shift-counts';
 import { Message } from '@/components/ui/auth-parts';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { AppBackground, Card, WeekPicker } from '@/components/ui/design';
 import { useAppData } from '@/contexts/app-data';
 import { useAuth } from '@/contexts/auth';
@@ -32,6 +34,8 @@ export default function ScheduleScreen() {
   const [editingShift, setEditingShift] = useState<Shift | null>(null);
   const [addTarget, setAddTarget] = useState<{ day: number; slot: ShiftSlot } | null>(null);
   const [actingShift, setActingShift] = useState<Shift | null>(null);
+  const [focusedWorkerId, setFocusedWorkerId] = useState<string | null>(null);
+  const [confirmingCopy, setConfirmingCopy] = useState(false);
 
   const isManager = session?.profile.role === 'manager';
 
@@ -72,13 +76,22 @@ export default function ScheduleScreen() {
 
   const myShifts = schedule.shifts.filter((s) => s.assigned_worker_id === profile.id);
 
+  // An empty draft week is the normal case and needs no question. Anything
+  // already there, or a week the team can already see, gets one first: the
+  // copy only adds, but it adds to something someone is relying on.
+  const copyNeedsConfirm = schedule.shifts.length > 0 || schedule.isPublished;
+  const copyPreviousWeek = () => {
+    setConfirmingCopy(false);
+    void schedule.copyPreviousWeek(weekStart);
+  };
+
   const gridProps = {
     organization,
     schedule,
     team,
     weekStart,
     editing: isManager && editing,
-    highlightWorkerId: isManager ? undefined : profile.id,
+    highlightWorkerId: isManager ? (focusedWorkerId ?? undefined) : profile.id,
     coverShiftIds: cover.shiftIdsAwaitingCover,
     swapShiftIds: swaps.shiftIdsInSwap,
     onSelectShift: (shift: Shift) => {
@@ -171,7 +184,12 @@ export default function ScheduleScreen() {
                 {isManager
                   ? editing
                     ? 'Klikni polje za urejanje'
-                    : `${schedule.shifts.length} vnosov`
+                    : focusedWorkerId
+                      ? `${team.nameOf(focusedWorkerId)}: ${shiftCount(
+                          schedule.shifts.filter((s) => s.assigned_worker_id === focusedWorkerId)
+                            .length,
+                        )}`
+                      : `${schedule.shifts.length} vnosov`
                   : 'Klikni svojo smeno za menjavo'}
               </Text>
             </View>
@@ -190,6 +208,26 @@ export default function ScheduleScreen() {
                   tint={schedule.isPublished ? semantic.red : semantic.green}
                 />
               </View>
+            ) : null}
+
+            {isManager ? (
+              <View style={{ flexDirection: 'row', marginTop: 8 }}>
+                <ActionButton
+                  label="Kopiraj prejšnji teden"
+                  onPress={() => (copyNeedsConfirm ? setConfirmingCopy(true) : copyPreviousWeek())}
+                  disabled={schedule.working}
+                  tint={c.textSecondary}
+                />
+              </View>
+            ) : null}
+
+            {isManager ? (
+              <TeamShiftCounts
+                schedule={schedule}
+                team={team}
+                selectedId={focusedWorkerId}
+                onSelect={setFocusedWorkerId}
+              />
             ) : null}
           </Card>
         </View>
@@ -284,6 +322,20 @@ export default function ScheduleScreen() {
           }
         />
       ) : null}
+
+      <ConfirmDialog
+        visible={confirmingCopy}
+        title="Kopiram prejšnji teden?"
+        message={
+          schedule.isPublished
+            ? 'Ta teden je že objavljen, zato bo ekipa kopirane smene videla takoj. Obstoječe smene ostanejo, dodajo se le manjkajoče.'
+            : 'Ta teden že ima smene. Ostanejo, kot so; dodajo se le tiste iz prejšnjega tedna, ki jih še ni.'
+        }
+        confirmLabel="Kopiraj"
+        busy={schedule.working}
+        onConfirm={copyPreviousWeek}
+        onCancel={() => setConfirmingCopy(false)}
+      />
 
       {actingShift ? (
         <ShiftActionSheet

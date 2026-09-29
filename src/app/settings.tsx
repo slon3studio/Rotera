@@ -15,7 +15,7 @@ import { radius, semantic } from '@/lib/theme';
 const THEME_OPTIONS: ThemePreference[] = ['system', 'light', 'dark'];
 
 /**
- * The things that belong to the person rather than to the restaurant: their
+ * The things that belong to the person rather than to the organization: their
  * name, their own hourly rate, and how the app should look.
  *
  * Kept off the profile screen because none of it is read more than once in a
@@ -169,7 +169,7 @@ export default function SettingsScreen() {
 
         {isManager ? (
           <>
-            <SectionTitle text="Restavracija" />
+            <SectionTitle text="Organizacija" />
             <Pressable onPress={() => router.push('/schedule-settings')}>
               <Card>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
