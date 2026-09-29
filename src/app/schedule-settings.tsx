@@ -20,10 +20,9 @@ import type { Duty, Position, ShiftSlot } from '@/types';
  * Everything about how *this* organization's schedule is shaped.
  *
  * Which halves of the day it runs, when each one starts and ends, and its own
- * vocabulary. Every new organization is still seeded with a restaurant's
- * words (Šank / Strežba, Priprava / Rajon+Smeti / Roba, from
- * create_organization in 0007); a shop needs Blagajna, Skladišče, Polnjenje,
- * so they have to be editable here.
+ * vocabulary. A new organization starts with no positions or duties (0018):
+ * a restaurant wants Šank and Priprava, a shop Blagajna and Skladišče, so the
+ * owner adds their own here.
  *
  * One screen rather than three, because these settings are read together: the
  * times mean nothing without knowing which slots are live, and a position is
@@ -152,7 +151,7 @@ export default function ScheduleSettingsScreen() {
         {org.notice ? <Message text={org.notice} kind="notice" /> : null}
 
         <Card>
-          <SectionTitle text="Delovna mesta" trailing="Šank, Rajon …" />
+          <SectionTitle text="Delovna mesta" trailing="Blagajna, Skladišče …" />
           <View style={{ height: 12 }} />
 
           {catalog.positions.length === 0 ? (
@@ -207,7 +206,7 @@ export default function ScheduleSettingsScreen() {
         </Card>
 
         <Card>
-          <SectionTitle text="Zadolžitve" trailing="Priprava, Roba …" />
+          <SectionTitle text="Zadolžitve" trailing="Čiščenje, Inventura …" />
           <View style={{ height: 12 }} />
 
           {catalog.duties.length === 0 ? (

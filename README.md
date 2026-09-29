@@ -249,11 +249,13 @@ organization, not hard-coded. What still assumes a restaurant:
   (`roleLabel.worker`, the role badge). The database enum value stays
   `worker`; only its label changed. The one exception is the comment in
   `contexts/auth.tsx` quoting the Swift app's old error, kept as history.
-- **Seeded catalog.** Every new organization is still created with a
-  restaurant's positions (Šank, Strežba) and duties (Priprava, Rajon+Smeti,
-  Roba) by `create_organization` (last defined in 0007). The manager can
-  rename or delete them in Nastavitve urnika, but a care home should not start
-  with a bar. Changing the seed is a migration.
+- **Seeded catalog** is gone: since 0018 a new organization starts with no
+  positions or duties, and the owner adds their own. Organizations created
+  before that keep the restaurant set they were given.
+- **Database error messages.** Most RPCs still raise "…restavracije" /
+  "…restavraciji" (e.g. "Uporabnik ni član nobene restavracije."). Only
+  `create_organization` has been reworded (0018); the rest need a migration
+  that redefines each function.
 - **Only two slots a day.** Morning and afternoon. Night shifts, 12-hour
   shifts or three-shift rotations (care homes, factories, security) need a
   more flexible slot model — a schema change, so a migration.
