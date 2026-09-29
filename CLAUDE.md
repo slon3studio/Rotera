@@ -2,8 +2,12 @@
 
 # Rotera
 
-Multi-tenant shift scheduling for restaurants. Product name is **Rotera**; the
-folder and GitHub repo keep the old name Rotaly so the remote doesn't change.
+Multi-tenant shift scheduling for **any business that works in shifts** —
+restaurants, shops, care homes, warehouses, etc. It started as a restaurant
+app, so some code and wording is still restaurant-specific; new work must be
+industry-neutral. Product name is **Rotera** (formerly Rotaly — the local
+folder RotalyEX still carries the old name; the GitHub repo is
+`slon3studio/Rotera`).
 One Expo Router codebase in `src/` builds iOS, Android and an installable web
 PWA. The Supabase backend is shared with the older SwiftUI app at
 `~/Desktop/Rotaly` — that folder is a dead copy, never edit it.
@@ -45,7 +49,10 @@ behaviour it describes.
 
 ## UI conventions
 
-- UI text is Slovene. Keep the vocabulary: vodja / natakar, urnik, želje.
+- UI text is Slovene and industry-neutral: organizacija / podjetje (not
+  restavracija), zaposleni (not natakar), vodja, urnik, želje. Don't introduce
+  new restaurant-specific words; when touching old ones (e.g. `roleLabel` in
+  `src/types/index.ts`), flag them rather than renaming silently.
   **Menjava** (cover: one shift changes hands, `cover_requests`) and
   **Rotacija** (two shifts trade, `shift_swaps`) are deliberately separate —
   never merge their tables, hooks, cards or wording.

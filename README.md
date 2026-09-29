@@ -1,8 +1,15 @@
 # Rotera — React Native (Expo)
 
+Shift scheduling for **any business that works in shifts** — restaurants,
+shops, care homes, warehouses, and so on. One organization (the tenant) has a
+manager (vodja) and employees; the manager builds the weekly schedule, and
+employees send wishes, ask for cover and trade shifts. It started as a
+restaurant app, so some wording still says so — see
+[Beyond restaurants](#beyond-restaurants).
+
 Port of the SwiftUI app at `~/Desktop/Rotaly` (which is where the name Rotaly
-comes from; the product is now called **Rotera**, and the folder and GitHub
-repo keep the old name only so the remote does not have to change). **The
+comes from; the product is now called **Rotera**). The local folder RotalyEX
+still carries the old name; the GitHub repo is `slon3studio/Rotera`. **The
 Supabase backend is
 shared and unchanged** — same project, same 14 migrations, same 12 RPCs. Only
 the UI is being rewritten.
@@ -160,7 +167,7 @@ home screen — weaker than APNs, and not built yet either way. Everything else
 
 ## Appearance and the settings screen
 
-`app/settings.tsx` holds what belongs to the person rather than the restaurant:
+`app/settings.tsx` holds what belongs to the person rather than the organization:
 their name, their own hourly rate, and light/dark. Reached from the gear on the
 profile.
 
@@ -178,10 +185,10 @@ Renaming yourself needs no migration: 0001 already grants
 grant is what refuses a worker writing `role = 'manager'` — in Postgres, not in
 the client.
 
-## Schedule settings belong to the restaurant
+## Schedule settings belong to the organization
 
-`app/schedule-settings.tsx` (manager only, reached from Nastavitve) is where a
-restaurant says how its schedule is shaped: which halves of the day it runs,
+`app/schedule-settings.tsx` (manager only, reached from Nastavitve) is where an
+organization says how its schedule is shaped: which halves of the day it runs,
 when each starts and ends, and its own positions and duties. One screen,
 because the settings are read together — the times mean nothing without
 knowing which slots are live.
@@ -231,6 +238,27 @@ database stops one shift being in both.
 
 Both are actioned by tapping the shift on the schedule. The Menjave tab is the
 list view, not the only way in.
+
+## Beyond restaurants
+
+Rotera is meant for any shift-based business, not only restaurants. The data
+model already fits: positions, duties and shift times are set per
+organization, not hard-coded. What still assumes a restaurant:
+
+- **Words on screen.** "Restavracija" and "natakar" appear in
+  `app/register.tsx` (Nova restavracija, Koda/Ime restavracije, "pridružiš se
+  kot natakar"), `app/settings.tsx` (section title), `contexts/auth.tsx`
+  (error messages), `(tabs)/wishes.tsx`, `(tabs)/swaps.tsx`,
+  `components/shift-sheets.tsx`, the role labels in `types/index.ts`
+  (`roleLabel`) and the `NATAKAR` badge in `components/ui/design.tsx`. Neutral
+  replacements: organizacija / podjetje, zaposleni.
+- **Only two slots a day.** Morning and afternoon. Night shifts, 12-hour
+  shifts or three-shift rotations (care homes, factories, security) need a
+  more flexible slot model — a schema change, so a migration.
+- **Code comments** still say "restaurant" where they mean the tenant. Harmless,
+  but new comments should say "organization".
+
+New work should use the neutral wording from the start.
 
 ## Not built (deliberate)
 
