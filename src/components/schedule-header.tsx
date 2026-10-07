@@ -6,7 +6,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Card } from '@/components/ui/design';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { usePalette } from '@/hooks/use-palette';
-import { radius, semantic } from '@/lib/theme';
+import { radius, largeTitle, semantic } from '@/lib/theme';
 import { addWeeks, dateOf, isCurrentWeek, mondayOf } from '@/lib/week';
 
 /**
@@ -52,7 +52,7 @@ export function ScheduleHeader({
   return (
     <View style={{ paddingHorizontal: 10, gap: 6 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', minHeight: 40 }}>
-        <Text style={{ flex: 1, paddingLeft: 4, fontSize: 26, fontWeight: '700', color: c.text }}>
+        <Text style={{ flex: 1, paddingLeft: 4, ...largeTitle, color: c.text }}>
           Urnik
         </Text>
 

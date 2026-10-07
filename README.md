@@ -42,7 +42,7 @@ Vmesnik je v slovenščini.
 - Opozorila na konflikte (nekdo je na urniku, čeprav je oddal prosto)
 - Odobritev ali zavrnitev menjav in rotacij
 - Nastavitve urnika: katere smene organizacija dela, njihov čas, delovna mesta
-  in zadolžitve
+  in zadolžitve (dostop samo prek Nastavitve → Organizacija, ne več s Profila)
 - Upravljanje ekipe in koda za pridružitev
 
 **Skupno**

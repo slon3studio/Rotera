@@ -20,7 +20,7 @@ import { useAppData } from '@/contexts/app-data';
 import { useAuth } from '@/contexts/auth';
 import { useAvailability } from '@/hooks/use-availability';
 import { usePalette } from '@/hooks/use-palette';
-import { semantic } from '@/lib/theme';
+import { largeTitle, semantic } from '@/lib/theme';
 import { ALL_DAYS, dayDescription, dayName, defaultWeek } from '@/lib/week';
 import type { DaySelection, ShiftPreference, ShiftSlot } from '@/types';
 import { enabledSlots, preferenceAllowsPosition } from '@/types';
@@ -100,7 +100,7 @@ function WorkerWishes() {
         refreshControl={
           <RefreshControl refreshing={availability.loading} onRefresh={() => void reload(weekStart)} />
         }>
-        <Text style={{ fontSize: 26, fontWeight: '700', color: c.text }}>Želje</Text>
+        <Text style={{ ...largeTitle, color: c.text }}>Želje</Text>
 
         <Card padding={6}>
           <WeekPicker
@@ -255,7 +255,7 @@ function ManagerWishes() {
             }}
           />
         }>
-        <Text style={{ fontSize: 26, fontWeight: '700', color: c.text }}>Želje ekipe</Text>
+        <Text style={{ ...largeTitle, color: c.text }}>Želje ekipe</Text>
 
         <Card padding={6}>
           <WeekPicker weekStart={weekStart} onChange={setWeekStart} />

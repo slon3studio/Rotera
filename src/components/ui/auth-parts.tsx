@@ -171,7 +171,7 @@ export function PrimaryButton({
           </View>
         ) : (
           <LinearGradient
-            colors={[c.accent, c.accent + 'C7']}
+            colors={c.accentGradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={{
@@ -180,6 +180,11 @@ export function PrimaryButton({
               alignItems: 'center',
               justifyContent: 'center',
               opacity: pressed ? 0.85 : 1,
+              transform: [{ scale: pressed ? 0.985 : 1 }],
+              shadowColor: c.accent,
+              shadowOpacity: 0.35,
+              shadowRadius: 14,
+              shadowOffset: { width: 0, height: 6 },
             }}>
             {loading ? (
               <ActivityIndicator color="#fff" />

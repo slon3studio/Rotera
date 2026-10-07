@@ -10,7 +10,7 @@ import { themePreferenceLabel, useAppTheme, type ThemePreference } from '@/conte
 import { useEarnings } from '@/hooks/use-earnings';
 import { usePalette } from '@/hooks/use-palette';
 import { parseDecimal } from '@/lib/format';
-import { radius, semantic } from '@/lib/theme';
+import { radius, largeTitle, semantic } from '@/lib/theme';
 
 const THEME_OPTIONS: ThemePreference[] = ['system', 'light', 'dark'];
 
@@ -72,7 +72,7 @@ export default function SettingsScreen() {
           <Pressable onPress={() => router.back()} hitSlop={12}>
             <Icon name="chevronLeft" size={22} color={c.accent} />
           </Pressable>
-          <Text style={{ fontSize: 26, fontWeight: '700', color: c.text }}>Nastavitve</Text>
+          <Text style={{ ...largeTitle, color: c.text }}>Nastavitve</Text>
         </View>
 
         {error ? <Message text={error} kind="error" /> : null}

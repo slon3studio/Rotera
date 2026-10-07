@@ -22,9 +22,10 @@ export function AppBackground() {
       pointerEvents="none"
       style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: c.background }}>
       <LinearGradient
-        colors={[c.accent + '21', 'transparent']}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 0.45 }}
+        colors={[c.accent + '26', c.accent + '0A', 'transparent']}
+        locations={[0, 0.25, 0.5]}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
         style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
       />
     </View>
@@ -51,6 +52,13 @@ export function Card({
           borderRadius: radius.lg,
           borderWidth: 1,
           borderColor: c.border,
+          // A shadow you notice only when it is gone: it lifts the card off
+          // the light background. On the dark one it is invisible, and the
+          // border does that job instead.
+          shadowColor: '#0F172A',
+          shadowOpacity: 0.06,
+          shadowRadius: 14,
+          shadowOffset: { width: 0, height: 4 },
         },
         style,
       ]}>
@@ -67,8 +75,8 @@ export function SectionTitle({ text, trailing }: { text: string; trailing?: stri
       <Text
         style={{
           fontSize: 12,
-          fontWeight: '600',
-          letterSpacing: 0.6,
+          fontWeight: '700',
+          letterSpacing: 0.9,
           color: c.textSecondary,
         }}>
         {text.toUpperCase()}
@@ -296,7 +304,14 @@ export function StatTile({
       </Text>
       <Text
         numberOfLines={1}
-        style={{ fontSize: 20, fontWeight: '700', marginTop: 4, color: tint ?? c.accent }}>
+        style={{
+          fontSize: 22,
+          fontWeight: '800',
+          letterSpacing: -0.3,
+          marginTop: 4,
+          fontFamily: fonts.rounded,
+          color: tint ?? c.accent,
+        }}>
         {value}
       </Text>
       {caption ? (

@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { Tabs } from 'expo-router';
-import type { ComponentProps } from 'react';
-import { Platform, Pressable, Text, View, type DimensionValue } from 'react-native';
+import { useEffect, useRef, useState, type ComponentProps } from 'react';
+import { Animated, Platform, Pressable, Text, View, type DimensionValue } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, type IconName } from '@/components/ui/icon';
@@ -32,6 +32,9 @@ import { radius, semantic } from '@/lib/theme';
 
 const BAR_HEIGHT = 66;
 const BAR_INSET = 12;
+const BAR_PADDING = 6;
+/** Breathing room between the sliding pill and the edge of its tab. */
+const PILL_GAP = 2;
 
 /**
  * Bottom padding a scrolling screen needs so its last row clears the bar.
@@ -101,9 +104,51 @@ function BottomFade() {
   );
 }
 
+/**
+ * The selected tab sits on one accent pill that slides between tabs, rather
+ * than each tab painting its own fill.
+ *
+ * A pill that travels says "you moved from here to there"; four fills that
+ * blink on and off say nothing about where you came from. The pill is drawn
+ * once, under the buttons, and only its offset animates — the buttons
+ * themselves never re-layout, so a tap never makes a label jump.
+ *
+ * Its width comes from `onLayout` because the bar is inset from the screen
+ * edges and the tab count can change; until the first layout it is simply
+ * not drawn, which is invisible in practice.
+ */
 function Bar({ state, navigation, badges }: Props) {
   const c = usePalette();
   const insets = useSafeAreaInsets();
+  const [barWidth, setBarWidth] = useState(0);
+
+  const visible = state.routes.filter((route) => TABS.some((t) => t.name === route.name));
+  const focusedSlot = Math.max(
+    0,
+    visible.findIndex((route) => route.key === state.routes[state.index]?.key),
+  );
+  const slotWidth = barWidth > 0 ? (barWidth - BAR_PADDING * 2) / visible.length : 0;
+
+  // In state, not a ref: created once and read while rendering.
+  const [offset] = useState(() => new Animated.Value(0));
+  const placed = useRef(false);
+
+  useEffect(() => {
+    if (slotWidth === 0) return;
+    const target = focusedSlot * slotWidth;
+    if (!placed.current) {
+      // The first position is a jump, not a slide in from the left edge.
+      offset.setValue(target);
+      placed.current = true;
+      return;
+    }
+    Animated.spring(offset, {
+      toValue: target,
+      useNativeDriver: Platform.OS !== 'web',
+      speed: 18,
+      bounciness: 6,
+    }).start();
+  }, [focusedSlot, slotWidth, offset]);
 
   const bottom: DimensionValue =
     Platform.OS === 'web'
@@ -112,6 +157,7 @@ function Bar({ state, navigation, badges }: Props) {
 
   return (
     <View
+      onLayout={(event) => setBarWidth(event.nativeEvent.layout.width)}
       style={{
         position: 'absolute',
         left: BAR_INSET,
@@ -120,7 +166,7 @@ function Bar({ state, navigation, badges }: Props) {
         height: BAR_HEIGHT,
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 6,
+        paddingHorizontal: BAR_PADDING,
         borderRadius: BAR_HEIGHT / 2,
         backgroundColor: c.card,
         borderWidth: 1,
@@ -128,17 +174,43 @@ function Bar({ state, navigation, badges }: Props) {
         // The lift is what makes it read as floating rather than as a panel
         // that happens to have rounded corners.
         shadowColor: '#000',
-        shadowOpacity: 0.28,
-        shadowRadius: 18,
-        shadowOffset: { width: 0, height: 6 },
-        elevation: 12,
+        shadowOpacity: 0.22,
+        shadowRadius: 24,
+        shadowOffset: { width: 0, height: 10 },
+        elevation: 14,
       }}>
-      {state.routes.map((route, index) => {
-        const tab = TABS.find((t) => t.name === route.name);
-        if (!tab) return null;
+      {slotWidth > 0 ? (
+        <Animated.View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            left: BAR_PADDING + PILL_GAP,
+            top: PILL_GAP + BAR_PADDING - 1,
+            bottom: PILL_GAP + BAR_PADDING - 1,
+            width: slotWidth - PILL_GAP * 2,
+            transform: [{ translateX: offset }],
+            borderRadius: radius.pill,
+            // A soft glow in the accent colour, so the pill looks lit rather
+            // than painted on.
+            shadowColor: c.accent,
+            shadowOpacity: 0.45,
+            shadowRadius: 10,
+            shadowOffset: { width: 0, height: 4 },
+          }}>
+          <LinearGradient
+            colors={c.accentGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{ flex: 1, borderRadius: radius.pill }}
+          />
+        </Animated.View>
+      ) : null}
 
-        const focused = state.index === index;
+      {visible.map((route) => {
+        const tab = TABS.find((t) => t.name === route.name)!;
+        const focused = state.routes[state.index]?.key === route.key;
         const badge = badges?.[route.name] ?? 0;
+        const tint = focused ? '#fff' : c.textSecondary;
 
         return (
           <Pressable
@@ -156,63 +228,45 @@ function Bar({ state, navigation, badges }: Props) {
               });
               if (!event.defaultPrevented && !focused) navigation.navigate(route.name);
             }}
-            style={{ flex: 1, alignItems: 'center' }}>
-            <View
-              style={{
-                alignItems: 'center',
-                gap: 1,
-                paddingHorizontal: 10,
-                paddingVertical: 5,
-                borderRadius: radius.pill,
-                backgroundColor: focused ? c.fill : 'transparent',
-              }}>
-              <View
-                style={{
-                  width: 30,
-                  height: 26,
-                  borderRadius: 8,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: focused ? c.accentSoft : 'transparent',
-                }}>
-                <Icon
-                  name={tab.icon}
-                  size={20}
-                  color={focused ? c.accent : c.textSecondary}
-                  weight={focused ? 'semibold' : 'regular'}
-                />
+            style={{ flex: 1, alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+            <View>
+              <Icon name={tab.icon} size={21} color={tint} weight={focused ? 'semibold' : 'regular'} />
 
-                {badge > 0 ? (
-                  <View
-                    style={{
-                      position: 'absolute',
-                      top: -3,
-                      right: -7,
-                      minWidth: 16,
-                      height: 16,
-                      paddingHorizontal: 4,
-                      borderRadius: radius.pill,
-                      backgroundColor: semantic.red,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}>
-                    <Text style={{ fontSize: 9, fontWeight: '700', color: '#fff' }}>
-                      {badge > 9 ? '9+' : badge}
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
-
-              <Text
-                numberOfLines={1}
-                style={{
-                  fontSize: 10.5,
-                  fontWeight: focused ? '700' : '500',
-                  color: focused ? c.accent : c.textSecondary,
-                }}>
-                {tab.label}
-              </Text>
+              {badge > 0 ? (
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: -4,
+                    right: -9,
+                    minWidth: 17,
+                    height: 17,
+                    paddingHorizontal: 4,
+                    borderRadius: radius.pill,
+                    backgroundColor: semantic.red,
+                    // A ring in the bar's own colour cuts the badge out of the
+                    // icon, and keeps it legible on top of the accent pill.
+                    borderWidth: 2,
+                    borderColor: focused ? c.accent : c.card,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                  <Text style={{ fontSize: 9, fontWeight: '800', color: '#fff' }}>
+                    {badge > 9 ? '9+' : badge}
+                  </Text>
+                </View>
+              ) : null}
             </View>
+
+            <Text
+              numberOfLines={1}
+              style={{
+                fontSize: 10.5,
+                fontWeight: focused ? '700' : '500',
+                letterSpacing: 0.1,
+                color: tint,
+              }}>
+              {tab.label}
+            </Text>
           </Pressable>
         );
       })}

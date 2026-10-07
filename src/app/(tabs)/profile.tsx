@@ -22,7 +22,7 @@ import { useAuth } from '@/contexts/auth';
 import { useEarnings } from '@/hooks/use-earnings';
 import { usePalette } from '@/hooks/use-palette';
 import { dayAndDate, hours, money, monthLabel, shiftCount } from '@/lib/format';
-import { radius, semantic } from '@/lib/theme';
+import { radius, largeTitle, semantic } from '@/lib/theme';
 import * as time from '@/lib/time';
 import type { Profile, ShiftLog } from '@/types';
 import { tracksTips } from '@/types';
@@ -87,7 +87,7 @@ export default function ProfileScreen() {
           />
         }>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Text style={{ flex: 1, fontSize: 26, fontWeight: '700', color: c.text }}>Profil</Text>
+          <Text style={{ flex: 1, ...largeTitle, color: c.text }}>Profil</Text>
           <Pressable
             onPress={() => router.push('/settings')}
             hitSlop={10}
@@ -144,20 +144,6 @@ export default function ProfileScreen() {
               </Text>
             </Card>
 
-            <Pressable onPress={() => router.push('/schedule-settings')}>
-              <Card>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                  <Icon name="tag" size={19} color={c.accent} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 15, color: c.text }}>Nastavitve urnika</Text>
-                    <Text style={{ fontSize: 12, color: c.textSecondary }}>
-                      Šank, Rajon, Priprava …
-                    </Text>
-                  </View>
-                  <Text style={{ fontSize: 14, color: c.textTertiary }}>›</Text>
-                </View>
-              </Card>
-            </Pressable>
           </>
         ) : (
           <>

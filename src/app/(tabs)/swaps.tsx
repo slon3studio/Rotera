@@ -17,7 +17,7 @@ import { useAppData } from '@/contexts/app-data';
 import { useAuth } from '@/contexts/auth';
 import { usePalette } from '@/hooks/use-palette';
 import { useSchedule } from '@/hooks/use-schedule';
-import { radius, semantic } from '@/lib/theme';
+import { radius, largeTitle, semantic } from '@/lib/theme';
 import * as time from '@/lib/time';
 import { addWeeks, dayName, mondayOf } from '@/lib/week';
 import { Icon } from '@/components/ui/icon';
@@ -291,7 +291,7 @@ export default function SwapsScreen() {
       <ScrollView
         contentContainerStyle={{ padding: 16, paddingTop: 56, gap: 14, paddingBottom: tabBarSpace }}
         refreshControl={<RefreshControl refreshing={cover.loading} onRefresh={refresh} />}>
-        <Text style={{ fontSize: 26, fontWeight: '700', color: c.text }}>Menjave</Text>
+        <Text style={{ ...largeTitle, color: c.text }}>Menjave</Text>
 
         {cover.error ?? swaps.error ? (
           <Message text={(cover.error ?? swaps.error) as string} kind="error" />

@@ -1,19 +1,21 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Pressable, RefreshControl, ScrollView, Switch, Text, TextInput, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, Text, TextInput, View } from 'react-native';
 
 import { DestructiveButton, Sheet, SheetFootnote, SheetRow } from '@/components/sheet';
 import { Message } from '@/components/ui/auth-parts';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { SwipeToDelete } from '@/components/ui/swipe-to-delete';
 import { AppBackground, Card, EmptyHint, PositionBadge, SectionTitle } from '@/components/ui/design';
+import { Icon } from '@/components/ui/icon';
 import { TimeField } from '@/components/ui/time-field';
+import { Toggle } from '@/components/ui/toggle';
 import { useAuth } from '@/contexts/auth';
 import { useCatalog } from '@/hooks/use-catalog';
 import { useOrgSettings, slotName, type ScheduleSettings } from '@/hooks/use-org-settings';
 import { usePalette } from '@/hooks/use-palette';
 import * as time from '@/lib/time';
-import { positionColors, radius, semantic } from '@/lib/theme';
+import { positionColors, radius, largeTitle, semantic } from '@/lib/theme';
 import type { Duty, Position, ShiftSlot } from '@/types';
 import { tracksTips } from '@/types';
 
@@ -87,7 +89,7 @@ export default function ScheduleSettingsScreen() {
           <Pressable onPress={() => router.back()} hitSlop={8}>
             <Text style={{ fontSize: 22, color: c.accent }}>‹</Text>
           </Pressable>
-          <Text style={{ fontSize: 26, fontWeight: '700', color: c.text }}>Nastavitve urnika</Text>
+          <Text style={{ ...largeTitle, color: c.text }}>Nastavitve urnika</Text>
         </View>
 
         {catalog.error ? <Message text={catalog.error} kind="error" /> : null}
@@ -153,14 +155,16 @@ export default function ScheduleSettingsScreen() {
 
         <SectionTitle text="Napitnine" />
         <Card>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <IconTile name="cash" tint={semantic.green} active={tracksTips(organization)} />
             <Text style={{ flex: 1, fontSize: 15, fontWeight: '600', color: c.text }}>
               Zaposleni vpisujejo napitnine
             </Text>
-            <Switch
+            <Toggle
               value={tracksTips(organization)}
               onValueChange={(on) => void org.setTracksTips(on)}
               disabled={org.saving}
+              accessibilityLabel="Zaposleni vpisujejo napitnine"
             />
           </View>
         </Card>
@@ -373,6 +377,32 @@ function usageWarning(uses: number | null, consequence: string) {
   return `Uporabljeno v ${uses} vnosih. ${consequence} Tega ni mogoče razveljaviti.`;
 }
 
+/** A rounded square holding an icon, tinted while its setting is on. */
+function IconTile({
+  name,
+  tint,
+  active,
+}: {
+  name: 'morning' | 'afternoon' | 'cash';
+  tint: string;
+  active: boolean;
+}) {
+  const c = usePalette();
+  return (
+    <View
+      style={{
+        width: 36,
+        height: 36,
+        borderRadius: radius.sm + 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: active ? tint + '24' : c.fill,
+      }}>
+      <Icon name={name} size={18} color={active ? tint : c.textTertiary} weight="semibold" />
+    </View>
+  );
+}
+
 function HiddenPill() {
   const c = usePalette();
   return (
@@ -502,7 +532,7 @@ function PositionSheet({
         <>
           <Card>
             <SheetRow label="V uporabi">
-              <Switch value={isActive} onValueChange={setIsActive} />
+              <Toggle value={isActive} onValueChange={setIsActive} accessibilityLabel="V uporabi" />
             </SheetRow>
           </Card>
           <SheetFootnote text="Izklopljeno delovno mesto se ne pojavi več pri oddaji želja in pri razporejanju. Obstoječi vnosi ostanejo." />
@@ -562,7 +592,7 @@ function DutySheet({
         <>
           <Card>
             <SheetRow label="V uporabi">
-              <Switch value={isActive} onValueChange={setIsActive} />
+              <Toggle value={isActive} onValueChange={setIsActive} accessibilityLabel="V uporabi" />
             </SheetRow>
           </Card>
           <SheetFootnote text="Izklopljena zadolžitev se ne pojavi več pri razporejanju. Obstoječi vnosi ostanejo." />
@@ -658,25 +688,28 @@ function SlotRow({
 
   return (
     <View style={{ gap: 10 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-        <View
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: 4,
-            backgroundColor: enabled ? tint : c.textTertiary,
-          }}
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <IconTile name={slot} tint={tint} active={enabled} />
+        <View style={{ flex: 1 }}>
+          <Text
+            style={{
+              fontSize: 15,
+              fontWeight: '600',
+              color: enabled ? c.text : c.textSecondary,
+            }}>
+            {slotName[slot]}
+          </Text>
+          <Text style={{ fontSize: 12, color: c.textTertiary }}>
+            {enabled ? time.range(start, end) : 'Izklopljeno'}
+          </Text>
+        </View>
+        <Toggle
+          value={enabled}
+          onValueChange={onToggle}
+          disabled={enabled && !canDisable}
+          tint={tint}
+          accessibilityLabel={slotName[slot]}
         />
-        <Text
-          style={{
-            flex: 1,
-            fontSize: 15,
-            fontWeight: '600',
-            color: enabled ? c.text : c.textSecondary,
-          }}>
-          {slotName[slot]}
-        </Text>
-        <Switch value={enabled} onValueChange={onToggle} disabled={enabled && !canDisable} />
       </View>
 
       <View style={{ opacity: enabled ? 1 : 0.45, gap: 8 }}>

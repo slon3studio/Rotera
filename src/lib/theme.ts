@@ -26,6 +26,10 @@ import { Platform } from 'react-native';
 export type Palette = {
   accent: string;
   accentSoft: string;
+  /** Top-left to bottom-right fill for the few surfaces that carry white text
+   *  on the accent: the tab bar's pill, primary buttons. Both stops keep
+   *  white text readable, so in dark mode it runs deeper, not lighter. */
+  accentGradient: [string, string];
   background: string;
   card: string;
   fill: string;
@@ -39,21 +43,25 @@ export const palette: Record<'light' | 'dark', Palette> = {
   light: {
     accent: '#0A5BE0',
     accentSoft: 'rgba(10, 91, 224, 0.12)',
-    background: '#F2F2F7',
+    accentGradient: ['#2B7CFF', '#0A55D6'],
+    background: '#F3F5F9',
     card: '#FFFFFF',
-    fill: 'rgba(120, 120, 128, 0.12)',
-    border: 'rgba(0, 0, 0, 0.07)',
-    text: '#000000',
+    fill: 'rgba(118, 124, 140, 0.12)',
+    border: 'rgba(15, 23, 42, 0.07)',
+    text: '#0B0D12',
     textSecondary: '#60646C',
     textTertiary: '#9A9AA0',
   },
   dark: {
     accent: '#3D96FF',
     accentSoft: 'rgba(61, 150, 255, 0.16)',
-    background: '#000000',
-    card: '#1C1C1E',
-    fill: 'rgba(120, 120, 128, 0.24)',
-    border: 'rgba(255, 255, 255, 0.08)',
+    accentGradient: ['#3A8EFF', '#1A5FD8'],
+    // A hair of blue in the blacks: pure #000 under #1C1C1E reads as stock
+    // iOS, the tint makes the surfaces feel like one family with the accent.
+    background: '#05070B',
+    card: '#151821',
+    fill: 'rgba(130, 138, 160, 0.20)',
+    border: 'rgba(255, 255, 255, 0.07)',
     text: '#FFFFFF',
     textSecondary: '#B0B4BA',
     textTertiary: '#7C7C80',
@@ -83,7 +91,7 @@ export const positionColors: Record<string, string> = {
   gray: '#8E8E93',
 };
 
-export const radius = { sm: 9, md: 14, lg: 16, pill: 999 } as const;
+export const radius = { sm: 10, md: 14, lg: 20, pill: 999 } as const;
 
 export const spacing = { xs: 4, sm: 8, md: 14, lg: 16, xl: 24 } as const;
 
@@ -98,3 +106,14 @@ export const fonts = Platform.select({
   },
   default: { rounded: undefined, mono: 'monospace' },
 })!;
+
+/**
+ * The big title at the top of each screen. One definition so every tab's
+ * heading has the same weight, tracking and rounded face.
+ */
+export const largeTitle = {
+  fontSize: 30,
+  fontWeight: '800',
+  letterSpacing: -0.6,
+  fontFamily: fonts.rounded,
+} as const;
