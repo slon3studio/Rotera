@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="sl">
+  <head>
+    <meta charset="utf-8" />
+    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+    <!-- viewport-fit=cover lets the app paint behind the notch and the home
+         indicator, which is what makes the installed version stop looking like
+         a web page in a frame. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"
+    />
+    <title>Rotera</title>
+
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- iOS ignores the manifest for these three, so they have to be repeated
+         here or "Add to Home Screen" gives a Safari-shaped icon and a browser
+         chrome bar. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Rotera" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+
+    <!-- Matches the app's own two themes, so the browser's own bars do not
+         flash the wrong colour on load. -->
+    <meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+
+    <!-- The `react-native-web` recommended style reset:
+         https://necolas.github.io/react-native-web/docs/setup/#root-element -->
+    <style id="expo-reset">
+      html,
+      body {
+        height: 100%;
+      }
+      /* iOS Safari counts `100%` as the height with the toolbars hidden, so
+         the app ended up taller than the visible area and its bottom edge —
+         tab bar included — fell below the fold, unreachable by scrolling.
+         `dvh` tracks the height that is actually on screen right now. */
+      @supports (height: 100dvh) {
+        html,
+        body {
+          height: 100dvh;
+        }
+      }
+      body {
+        overflow: hidden;
+        /* Without this the page is white for the moment before React paints,
+           which in dark mode is a flash straight in the eye. */
+        background-color: #f2f2f7;
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #000000;
+        }
+      }
+      #root {
+        display: flex;
+        height: 100%;
+        flex: 1;
+        box-sizing: border-box;
+      }
+      /* A phone app does not let you select the interface by dragging, and
+           does not bounce the whole page. Inputs keep both. */
+      body,
+      #root {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        overscroll-behavior: none;
+      }
+      input,
+      textarea {
+        -webkit-user-select: text;
+        user-select: text;
+      }
+    </style>
+  </head>
+
+  <body>
+    <noscript>Za Rotera je potreben vklopljen JavaScript.</noscript>
+    <div id="root"></div>
+
+    <script>
+      // Registered after load so it never competes with the app's own first
+      // paint. Failure is not worth reporting: without it the app still runs,
+      // it just cannot be installed.
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js').catch(function () {});
+        });
+      }
+    </script>
+  </body>
+</html>
