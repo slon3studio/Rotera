@@ -25,6 +25,7 @@ type AuthValue = {
     organization: OrganizationChoice;
   }) => Promise<void>;
   signOut: () => Promise<void>;
+  deleteAccount: () => Promise<boolean>;
   updateFullName: (name: string) => Promise<boolean>;
   requestPasswordReset: (email: string) => Promise<boolean>;
   completePasswordReset: (args: {
@@ -248,6 +249,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setStatus('signedOut');
   }, [clearMessages]);
 
+  /**
+   * Deletes the signed-in account (App Store guideline 5.1.1(v)).
+   *
+   * The database does the work in `delete_my_account` (0021), including
+   * removing the organization when this is its last active manager. The
+   * session token now names a user who no longer exists, so sign-out is
+   * local only: a global sign-out would ask the server about that user and
+   * fail, leaving the token on the device.
+   */
+  const deleteAccount = useCallback(async () => {
+    clearMessages();
+    setBusy(true);
+    const { error: rpcError } = await supabase.rpc('delete_my_account');
+
+    if (rpcError) {
+      setBusy(false);
+      setError(slovenian(rpcError.message));
+      return false;
+    }
+
+    await supabase.auth.signOut({ scope: 'local' });
+    setBusy(false);
+    setSession(null);
+    setStatus('signedOut');
+    setNotice('Račun je izbrisan.');
+    return true;
+  }, [clearMessages]);
+
   const requestPasswordReset = useCallback(
     async (email: string) => {
       clearMessages();
@@ -398,6 +427,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signIn,
       signUp,
       signOut,
+      deleteAccount,
       updateFullName,
       requestPasswordReset,
       completePasswordReset,
@@ -413,6 +443,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signIn,
       signUp,
       signOut,
+      deleteAccount,
       updateFullName,
       requestPasswordReset,
       completePasswordReset,

@@ -7,18 +7,53 @@
     "icon": "./assets/images/icon.png",
     "scheme": "rotera",
     "userInterfaceStyle": "automatic",
+    "platforms": [
+      "ios",
+      "web"
+    ],
     "ios": {
-      "bundleIdentifier": "com.rotera.app",
-      "supportsTablet": false
-    },
-    "android": {
-      "package": "com.rotera.app",
-      "adaptiveIcon": {
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      "bundleIdentifier": "com.slon3studio.Rotera",
+      "supportsTablet": false,
+      "appleTeamId": "2FV64X6H3S",
+      "config": {
+        "usesNonExemptEncryption": false
       },
-      "predictiveBackGestureEnabled": false
+      "privacyManifests": {
+        "NSPrivacyCollectedDataTypes": [
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeEmailAddress",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeName",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeUserID",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeOtherUserContent",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          }
+        ]
+      }
     },
     "web": {
       "output": "single",
@@ -39,7 +74,17 @@
         }
       ],
       "expo-sqlite",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "17.0"
+          }
+        }
+      ],
+      "expo-font",
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": true,

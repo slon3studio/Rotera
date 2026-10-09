@@ -8,8 +8,9 @@ app, so some code and wording is still restaurant-specific; new work must be
 industry-neutral. Product name is **Rotera** (formerly Rotaly — the local
 folder RotalyEX still carries the old name; the GitHub repo is
 `slon3studio/Rotera`).
-One Expo Router codebase in `src/` builds iOS, Android and an installable web
-PWA. The Supabase backend is shared with the older SwiftUI app at
+One Expo Router codebase in `src/` builds iOS (Xcode project via
+`expo prebuild --platform ios`, for the App Store) and an installable web PWA.
+There is no Android app — Android users use the PWA. The Supabase backend is shared with the older SwiftUI app at
 `~/Desktop/Rotaly` — that folder is a dead copy, never edit it.
 
 `README.md` is the full design record (the why behind every rule below). Read

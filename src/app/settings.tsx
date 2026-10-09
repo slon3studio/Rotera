@@ -1,18 +1,25 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Linking, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 import { Message } from '@/components/ui/auth-parts';
 import { AppBackground, Card, SectionTitle } from '@/components/ui/design';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Icon } from '@/components/ui/icon';
 import { useAuth } from '@/contexts/auth';
 import { themePreferenceLabel, useAppTheme, type ThemePreference } from '@/contexts/theme';
 import { useEarnings } from '@/hooks/use-earnings';
+import { useTeam } from '@/hooks/use-team';
 import { usePalette } from '@/hooks/use-palette';
 import { parseDecimal } from '@/lib/format';
 import { radius, largeTitle, semantic } from '@/lib/theme';
 
 const THEME_OPTIONS: ThemePreference[] = ['system', 'light', 'dark'];
+
+// App Store Connect needs both pages, and the privacy policy must also be
+// reachable from inside the app.
+const PRIVACY_URL = 'https://slon3studio.github.io/Slon3Studio_website/pages/Rotera/PrivacyPolicy.html';
+const SUPPORT_URL = 'https://slon3studio.github.io/Slon3Studio_website/pages/Rotera/SupportPage.html';
 
 /**
  * The things that belong to the person rather than to the organization: their
@@ -24,9 +31,12 @@ const THEME_OPTIONS: ThemePreference[] = ['system', 'light', 'dark'];
  */
 export default function SettingsScreen() {
   const c = usePalette();
-  const { session, updateFullName, busy, error, notice, clearMessages } = useAuth();
+  const { session, updateFullName, deleteAccount, busy, error, notice, clearMessages } =
+    useAuth();
   const { preference, setPreference } = useAppTheme();
   const earnings = useEarnings();
+  const team = useTeam();
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   // Derived, not mirrored: null until the field is touched, so the stored
   // value shows through until then and a save elsewhere is not overwritten.
@@ -35,6 +45,9 @@ export default function SettingsScreen() {
 
   const load = useCallback(async () => {
     if (session && session.profile.role !== 'manager') await earnings.load(session.profile.id);
+    // Only to word the delete confirmation: the last manager takes the
+    // organization with them (0021).
+    if (session?.profile.role === 'manager') await team.load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.profile.id]);
 
@@ -48,6 +61,10 @@ export default function SettingsScreen() {
   if (!session) return null;
   const { profile } = session;
   const isManager = profile.role === 'manager';
+
+  const isLastManager =
+    isManager &&
+    !team.members.some((m) => m.role === 'manager' && m.is_active && m.id !== profile.id);
 
   const name = typedName ?? profile.full_name;
   const nameChanged = name.trim() !== profile.full_name && name.trim().length > 0;
@@ -225,8 +242,72 @@ export default function SettingsScreen() {
           <Legend tint={c.accent} label="Moja smena" note="Tvoja smena tisti dan" />
           <Legend tint={semantic.yellow} label="Opozorilo" note="Ne ujema se z oddanimi željami" />
         </Card>
+
+        <SectionTitle text="Pomoč in zasebnost" />
+        <Card>
+          <LinkRow label="Politika zasebnosti" url={PRIVACY_URL} first />
+          <LinkRow label="Podpora" url={SUPPORT_URL} />
+        </Card>
+
+        <SectionTitle text="Račun" />
+        <Pressable
+          onPress={() => setConfirmingDelete(true)}
+          disabled={busy}
+          style={{
+            minHeight: 46,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: radius.md,
+            borderWidth: 1,
+            borderColor: semantic.red + '40',
+            backgroundColor: semantic.red + '14',
+          }}>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: semantic.red }}>
+            Izbriši račun
+          </Text>
+        </Pressable>
+        <Text style={{ fontSize: 12, color: c.textSecondary, marginTop: -8 }}>
+          Trajno izbriše tvoj račun in tvoje podatke. Tega ni mogoče razveljaviti.
+        </Text>
       </ScrollView>
+
+      <ConfirmDialog
+        visible={confirmingDelete}
+        title="Izbrišem račun?"
+        message={
+          isLastManager
+            ? `Si edini vodja, zato se izbriše tudi organizacija ${session.organization.name} z urnikom in podatki vseh članov. Tega ni mogoče razveljaviti.`
+            : 'Izbrišejo se tvoj račun, želje, vpisane ure in postavka. Tega ni mogoče razveljaviti.'
+        }
+        confirmLabel="Izbriši račun"
+        destructive
+        busy={busy}
+        onConfirm={() => {
+          void deleteAccount().then(() => setConfirmingDelete(false));
+        }}
+        onCancel={() => setConfirmingDelete(false)}
+      />
     </View>
+  );
+}
+
+function LinkRow({ label, url, first }: { label: string; url: string; first?: boolean }) {
+  const c = usePalette();
+
+  return (
+    <Pressable
+      onPress={() => void Linking.openURL(url)}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        paddingVertical: 13,
+        borderTopWidth: first ? 0 : 1,
+        borderTopColor: c.border,
+      }}>
+      <Text style={{ flex: 1, fontSize: 15, color: c.text }}>{label}</Text>
+      <Icon name="chevronRight" size={15} color={c.textTertiary} />
+    </Pressable>
   );
 }
 

@@ -5,7 +5,9 @@ kdaj lahko delajo, vodja pa iz tega zgradi urnik, ga objavi in ureja menjave.
 Namenjena je vsakemu izmenskemu delu — gostinstvu, trgovini, domovom za
 starejše, skladiščem.
 
-Deluje na iPhonu, Androidu in v brskalniku iz ene kodne baze.
+Deluje kot iPhone aplikacija (App Store) in kot spletna aplikacija v brskalniku
+iz ene kodne baze. Android aplikacije ni — uporabniki Androida uporabljajo
+spletno različico.
 
 ## Namen
 
@@ -49,6 +51,9 @@ Vmesnik je v slovenščini.
 
 - Svetla in temna tema ali po nastavitvi telefona
 - Vgradljiva spletna različica (PWA) z ikono na domačem zaslonu
+- Brisanje računa v Nastavitve → Račun (zahteva App Store, 5.1.1(v)). Če se
+  izbriše zadnji aktivni vodja, se izbriše cela organizacija (migracija 0021)
+- Povezavi do politike zasebnosti in podpore v Nastavitvah (slon3studio.github.io/Slon3Studio_website)
 
 ## Zagon in dostop
 
@@ -67,9 +72,8 @@ aplikacija.
 (99 $/leto); ko bo, pride povezava sem:
 `https://apps.apple.com/app/rotera/idXXXXXXXXX`
 
-**Google Play:** še ni objavljeno. Za Android je medtem možen tudi APK prek
-`npx eas build --platform android --profile preview`, ki ga sodelavci
-namestijo kar iz povezave.
+**Android:** samostojne aplikacije ni in ne bo — Android uporabniki namestijo
+spletno različico (glej zgoraj).
 
 **Lokalno:**
 
@@ -113,7 +117,7 @@ obravnava kot pot.
 
 ## Tehnologije
 
-- **Expo (React Native) in TypeScript** — ena koda za iOS, Android in splet
+- **Expo (React Native) in TypeScript** — ena koda za iOS in splet
 - **Supabase** — Postgres, prijava in Row-Level Security
 - **Vercel** — gostovanje spletne različice
 - Brez lastnega strežnika: aplikacija govori neposredno s Supabase, pravila pa
@@ -143,12 +147,18 @@ na Vercelu. Drugega koraka ni.
 git add -A && git commit -m "opis spremembe" && git push
 ```
 
-Za nativni različici (App Store, Google Play) se uporabi EAS:
+Za App Store se iz iste kode zgenerira Xcode projekt. Mapa `ios/` ni v gitu
+(je v `.gitignore`) — kadarkoli jo lahko na novo zgeneriraš iz `app.json`:
 
 ```bash
-npx eas build --platform ios        # zahteva Apple Developer Program
-npx eas build --platform android
+npx expo prebuild --platform ios --clean   # ustvari ios/Rotera.xcworkspace
+open ios/Rotera.xcworkspace                # v Xcodu: Product → Archive
 ```
+
+Vedno odpri `.xcworkspace`, ne `.xcodeproj`. Nastavitve (ime, bundle ID
+`com.slon3studio.Rotera`, ikone) spreminjaj v `app.json`, ne v Xcodu — ob naslednjem
+`prebuild --clean` se ročne spremembe v `ios/` izgubijo. Za Archive potrebuješ
+Apple Developer Program (99 $/leto) in v Xcodu izbran svoj Team.
 
 ## Pogosta opravila
 
